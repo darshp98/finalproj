@@ -22,7 +22,7 @@ function preload() {
 function setup() {
   createCanvas(windowWidth, windowHeight);
   background('black');
-  socket = io.connect('http://localhost:3000');
+  socket = io.connect('https://drawing-app-advcoding.herokuapp.com/:3000');
 
   //handle the broadcast calls
   socket.on('circle', newCircleDrawing);

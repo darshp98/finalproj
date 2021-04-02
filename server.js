@@ -11,7 +11,11 @@ var app = express();
 //create our server
 //port 3000; wont close server bc server port is listening
 //localhost:3000 - im only one tht can see this
-var server = app.listen(3000);
+//var server = app.listen(3000);
+
+//heroku
+var port = process.env.PORT || 3000;
+var server = app.listen(port);
 
 //app uses files in public folder
 app.use(express.static('public'));
