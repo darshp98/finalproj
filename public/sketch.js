@@ -12,7 +12,7 @@ var buttonRed, buttonBlue, buttonGreen, buttonHeart, buttonSmile;
 var redVal = 255, greenVal = 0, blueVal = 0;
 var slider;
 var heart, smile;
-var heartPressed = false, smilePressed = false, colorPressed = false;
+var heartPressed = false, smilePressed = false;
 
 function preload() {
   heart = loadImage('images/heart.png');
@@ -29,15 +29,10 @@ function setup() {
   socket.on('emoji', newEmojiDrawing);
 
   buttonRed = select('#Red');
-
   buttonBlue = select('#Blue');
-
   buttonGreen = select('#Green');
-
   buttonHeart = select('#Heart');
-
   buttonSmile = select('#Smile');
-
 
   buttonRed.mousePressed(makeRed);
   buttonBlue.mousePressed(makeBlue);
