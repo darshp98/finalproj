@@ -1,0 +1,28 @@
+{
+  "name": "website",
+  "version": "1.0.0",
+  "description": "making a drawing app w friends",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/darshp98/class16.git"
+  },
+  "keywords": [
+    "drawing",
+    "p5"
+  ],
+  "author": "Darshana Paramesh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/darshp98/class16/issues"
+  },
+  "homepage": "https://github.com/darshp98/class16#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^4.0.0"
+  }
+}
