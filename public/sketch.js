@@ -1,132 +1,195 @@
 //client code - frontend
 //cannot pull from node modules, those are only for backend
 
-/* background colors - black, white
-stroke colors - red, blue, green, white, black, orange, yellow, purple, pink ?
-stroke size slider X
-emojis - heart, smiley X
-random color button ? */
-
 var socket;
-var buttonRed, buttonBlue, buttonGreen, buttonHeart, buttonSmile;
+//screens
+var home = true, phrasing = false, drawing = false, captioning = false;
+//home screen
+var playerDropdown, timeDropdown, buttonNext;
+//phrase screen
+var phraseInput, initialPhrases, otherUserPhrase, buttonSubmit, timer;
+//drawing screen
+var buttonRed, buttonBlue, buttonGreen;
 var redVal = 255, greenVal = 0, blueVal = 0;
-var slider;
-var heart, smile;
-var heartPressed = false, smilePressed = false;
-
-function preload() {
-  heart = loadImage('images/heart.png');
-  smile = loadImage('images/smile.png');
-}
+var strokeSlider;
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
-  background('black');
-  socket = io.connect('https://drawing-app-advcoding.herokuapp.com/:3000');
+  socket = io.connect('http://localhost:3000');
 
-  //handle the broadcast calls
-  socket.on('circle', newCircleDrawing);
-  socket.on('emoji', newEmojiDrawing);
+  //home screen
+  playerDropdown = createSelect();
+  timeDropdown = createSelect();
+  buttonNext = select('#Next');
 
+  buttonNext.mousePressed(phraseScreen);
+  buttonNext.position(windowWidth / 2, 500);
+  playerDropdown.position(windowWidth / 2, 300);
+  playerDropdown.option(4);
+  playerDropdown.option(5);
+  playerDropdown.option(6);
+  timeDropdown.position(windowWidth / 2, 400);
+  timeDropdown.option(60);
+  timeDropdown.option(90);
+  timeDropdown.option(120);
+
+  //phrase screen
+  phraseInput = createInput('Enter a phrase!');
+  buttonSubmit = select('#Submit');
+
+  phraseInput.position(windowWidth / 2, 300);
+  buttonSubmit.mousePressed(drawScreen);
+  buttonSubmit.position(windowWidth / 2, 400);
+
+  socket.on('firstPhrases', sendPhrase);
+
+  //drawing screen
   buttonRed = select('#Red');
   buttonBlue = select('#Blue');
   buttonGreen = select('#Green');
-  buttonHeart = select('#Heart');
-  buttonSmile = select('#Smile');
 
   buttonRed.mousePressed(makeRed);
   buttonBlue.mousePressed(makeBlue);
   buttonGreen.mousePressed(makeGreen);
-  buttonHeart.mousePressed(makeHeart);
-  buttonSmile.mousePressed(makeSmile);
 
-  slider = createSlider();
-  slider.position(300, 0);
+  strokeSlider = createSlider();
+  strokeSlider.position(300, 0);
+
 }
 
+function draw() {
+  createCanvas(windowWidth, windowHeight);
+
+  if (home) {
+    homeScreen();
+  } else if (phrasing) {
+    phraseScreen();
+  } else if (drawing) {
+    drawScreen();
+  } else if (captioning) {
+    captionScreen();
+  }
+
+}
+
+function homeScreen() {
+  background('grey');
+  textAlign(CENTER)
+  text("How many players:", windowWidth / 2, 275);
+  text("How many seconds per round:", windowWidth / 2, 375);
+
+  //hiding stuff from phrase and draw screens
+  phraseInput.hide();
+  buttonSubmit.hide();
+  strokeSlider.hide();
+  buttonRed.hide();
+  buttonBlue.hide();
+  buttonGreen.hide();
+
+}
+
+function phraseScreen() {
+  home = false;
+  phrasing = true;
+
+  background('grey');
+  phraseInput.show();
+  buttonSubmit.show();
+
+  // timer = timeDropdown.value();
+
+  // if (frameCount % 60 == 0 && timer > 0) {
+  //   timer--;
+  // }
+
+  // if (timer == 0) {
+  //   phrasing = false;
+  //   drawing = true;
+  // }
+
+  //hiding stuff from home and draw screens
+  playerDropdown.hide();
+  timeDropdown.hide();
+  buttonNext.hide();
+  strokeSlider.hide();
+  buttonRed.hide();
+  buttonBlue.hide();
+  buttonGreen.hide();
+
+}
+
+function sendPhrase(data) {
+  otherUserPhrase = str(data);
+}
+
+function drawScreen(points) {
+
+  initialPhrases = phraseInput.value();
+  socket.emit('firstPhrases', initialPhrases);
+
+  home = false;
+  phrasing = false;
+  drawing = true;
+  background('grey');
+  textAlign(CENTER);
+  text("Draw this:", windowWidth / 2, 50);
+  text(otherUserPhrase, windowWidth / 2, 70);
+
+  // stroke(points.r, points.g, points.b);
+  // strokeWeight(points.size);
+  // line(points.x, points.y, points.x + 1, points.y + 1);
+
+  strokeSlider.show();
+  buttonRed.show();
+  buttonBlue.show();
+  buttonGreen.show();
+
+  //hiding stuff from home and phrase screens
+  playerDropdown.hide();
+  timeDropdown.hide();
+  buttonNext.hide();
+  phraseInput.hide();
+  buttonSubmit.hide();
+
+}
+
+//canvas drawing functions
 function makeRed() {
   redVal = 255;
   greenVal = 0;
   blueVal = 0;
-  heartPressed = false;
-  smilePressed = false;
+
 }
 
 function makeBlue() {
   redVal = 0;
   greenVal = 0;
   blueVal = 255;
-  heartPressed = false;
-  smilePressed = false;
+
 }
 
 function makeGreen() {
   redVal = 0;
   greenVal = 255;
   blueVal = 0;
-  heartPressed = false;
-  smilePressed = false;
-}
 
-function makeHeart() {
-  heartPressed = true;
-  smilePressed = false;
-}
-
-function makeSmile() {
-  heartPressed = false;
-  smilePressed = true;
-}
-
-function newCircleDrawing(data) {
-  stroke(data.r, data.g, data.b);
-  strokeWeight(data.size);
-  line(data.x, data.y, data.x + 1, data.y + 1)
-}
-
-function newEmojiDrawing(data) {
-  if (data.img == 1) {
-    image(smile, data.x, data.y, data.sizeES, data.sizeES);
-  } else if (data.img == 2) {
-    image(heart, data.x, data.y, data.sizeEH, data.sizeEH);
-  }
 }
 
 function mouseDragged() {
-  if (heartPressed) {
-    image(heart, mouseX, mouseY, slider.value(), slider.value());
-    var data = {
-      x: mouseX,
-      y: mouseY,
-      sizeEH: slider.value(),
-      img: 2
-    }
-  } else if (smilePressed) {
-    image(smile, mouseX, mouseY, slider.value(), slider.value());
-    var data = {
-      x: mouseX,
-      y: mouseY,
-      sizeES: slider.value(),
-      img: 1
-    }
-  } else {
+
+  if (drawing) {
     stroke(redVal, greenVal, blueVal);
     strokeWeight(slider.value());
+    strokeWeight(strokeSlider.value());
     line(mouseX, mouseY, (mouseX + 1), (mouseY + 1));
 
-    //data is what the sockets send to each other
-    //object literal notation
-    var data = {
+    var points = {
       x: mouseX,
       y: mouseY,
       r: redVal,
       g: greenVal,
       b: blueVal,
-      size: slider.value()
+      size: strokeSlider.value()
     }
   }
-  //console.log(heartPressed, smilePressed);
-
-  socket.emit('circle', data);
-  socket.emit('emoji', data);
 }
+//session id- when u get new connection, that is the id, need to register w session id, server.onconnection, array of players, affiliate player w their session id, sending it by using session id  

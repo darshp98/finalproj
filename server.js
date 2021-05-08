@@ -1,5 +1,3 @@
-//backend code - server code, node code
-
 console.log("server is running");
 
 var express = require('express');
@@ -9,37 +7,49 @@ var express = require('express');
 var app = express();
 
 //create our server
-//port 3000; wont close server bc server port is listening
-//localhost:3000 - im only one tht can see this
-//var server = app.listen(3000);
-
+var server = app.listen(3000);
 //heroku
-var port = process.env.PORT || 3000;
-var server = app.listen(port);
+// var port = process.env.PORT || 3000;
+// var server = app.listen(port);
 
 //app uses files in public folder
 app.use(express.static('public'));
 
+//creates socket
 var socket = require('socket.io');
-
-//variable to keep track of inputs and outputs
 var io = socket(server);
 
-//set up a connection event - new input/output
-//callback
+//set up a connection event
 io.sockets.on('connection', newConnection);
+var phrasesOfSockets = {};
+var orderCount = 0;
 
 function newConnection(socket) {
     console.log("new connection! " + socket.id);
+    socketName = socket.id;
+    orderCount += 1;
 
-    socket.on('circle', circleMsg);
-    socket.on('emoji', emojiMsg);
+    phrasesOfSockets[socketName] = {
+        'order': orderCount, 'phrase': ''
+    };
 
-    function circleMsg(data) {
-        socket.broadcast.emit('circle', data); //sends info of all servers to each other
-    }
+    socket.on('firstPhrases', phraseMsg);
+    function phraseMsg(data) {
 
-    function emojiMsg(data) {
-        socket.broadcast.emit('emoji', data);
+        phrasesOfSockets[socketName]['phrase'] = data; //replaces 'phrase' w user's phrase
+        console.log(phrasesOfSockets);
+
+        currPlayer = phrasesOfSockets[socketName]['order'];
+
+        for (var [key, value] of Object.entries(phrasesOfSockets)) {
+
+            if (value['order'] == currPlayer + 1) { //this is not happening bc not true ever
+
+                io.to(key).emit('firstPhrases', data); //emits phrase of first player to second player key, and so forth
+
+                console.log(value['order']);
+                console.log(currPlayer);
+            }
+        }
     }
 }
