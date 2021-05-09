@@ -1,8 +1,37 @@
 html, body {
   margin: 0;
   padding: 0;
+  background-color: wheat;
 }
 
 canvas {
   display: block;
+  margin-left: 400px;
+  margin-top: 60px;
+  border-radius: 15px;
+  background-color: rgb(255, 255, 255);
 }
+
+.msgbox {
+  display: block;
+  width: 250px;
+  height: 500px;
+  background-color: rgba(253, 253, 253, 0.849);
+  border-radius: 15px;
+  position:absolute;
+  top: 80px;
+  left:900px;
+  margin-left: 10px;
+}
+
+.drawtoolbox {
+  display: block;
+  width: 500px;
+  height: 100px;
+  background-color: rgba(253, 253, 253, 0.849);
+  border-radius: 15px;
+  position:absolute;
+  top: 600px;
+  left:400px;
+}
+

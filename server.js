@@ -1,55 +1,41 @@
 console.log("server is running");
 
 var express = require('express');
-
-//app = application
-// using constructor to create an express app
 var app = express();
+app.use(express.static('public'));
 
-//create our server
 var server = app.listen(3000);
 //heroku
 // var port = process.env.PORT || 3000;
 // var server = app.listen(port);
 
-//app uses files in public folder
-app.use(express.static('public'));
-
-//creates socket
 var socket = require('socket.io');
 var io = socket(server);
-
-//set up a connection event
 io.sockets.on('connection', newConnection);
-var phrasesOfSockets = {};
-var orderCount = 0;
+
+var phrases = ['dog', 'cat', 'mouse', 'santa', 'snowman', 'elf', 'alien', 'spaceship', 'rocket']; //all given phrases
+var players = []; //all socket ids
+var display = false;
 
 function newConnection(socket) {
     console.log("new connection! " + socket.id);
-    socketName = socket.id;
-    orderCount += 1;
+    players.push(socket.id);
 
-    phrasesOfSockets[socketName] = {
-        'order': orderCount, 'phrase': ''
-    };
+    socket.on('roundstart', startMsg)
+    function startMsg(i) { //display phrase to curr player in array, once round is over, i increases and sends display to next player
+        currPlayer = players[i];
+        phrase = phrases[i];
+        socket.to(currPlayer).emit('options', phrase);
+    }
 
-    socket.on('firstPhrases', phraseMsg);
-    function phraseMsg(data) {
+    socket.on('userguesses', guessMsg);
+    function guessMsg(userGuess) {
+        socket.broadcast.emit('userguesses', userGuess);
+        console.log('server:' + userGuess)
+    }
 
-        phrasesOfSockets[socketName]['phrase'] = data; //replaces 'phrase' w user's phrase
-        console.log(phrasesOfSockets);
-
-        currPlayer = phrasesOfSockets[socketName]['order'];
-
-        for (var [key, value] of Object.entries(phrasesOfSockets)) {
-
-            if (value['order'] == currPlayer + 1) { //this is not happening bc not true ever
-
-                io.to(key).emit('firstPhrases', data); //emits phrase of first player to second player key, and so forth
-
-                console.log(value['order']);
-                console.log(currPlayer);
-            }
-        }
+    socket.on('drawing', drawingMsg);
+    function drawingMsg(points) {
+        socket.broadcast.emit('drawing', points);
     }
 }
