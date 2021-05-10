@@ -99,5 +99,15 @@ button {
   border-radius: 15px;
   border: none;
 }
+#circle {
+  height: 50px;
+  width: 50px;
+  background-color: rgb(247, 244, 244);
+  stroke-width: 2px;
+  border-radius: 50%;
+  position: absolute;
+  top:20px;
+  left: 400px;
+}
 
 

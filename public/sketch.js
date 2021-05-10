@@ -13,11 +13,13 @@ var roundinfo = {
   newPhrase: phrases[index]
 }
 var clientPoints = {};
+var  timer =60;
 
 //NEXT ROUND STUFF TO FIX:
 //increase index by one for every client not just client that clicked
 //figure out how to clear canvas for every client when clicked
 //OTHERS:
+//timer
 //maybe include player num of each client
 //deploy to heroku
 
@@ -25,7 +27,6 @@ function setup() {
   createCanvas(500, 500);
 
   socket = io.connect('http://localhost:3000');
-
   socket.emit('turn', roundinfo);
   socket.on('turn', firstRound);
   socket.on('drawing', showDrawing);
@@ -36,7 +37,7 @@ function setup() {
 
   nextButton = select('#Next');
   nextButton.mousePressed(nextRound);
-  nextButton.position(1000, 600);
+  nextButton.position(1050, 600);
   nextButton.hide();
 
   submitButton = select('#Submit');
@@ -63,9 +64,9 @@ function setup() {
   buttonGreen.position(580, 600);
   buttonBlue.position(640, 600);
   buttonViolet.position(700, 600);
-  buttonWhite.position(760, 600);
-  buttonBlack.position(820, 600);
-  buttonClear.position(340, 600);
+  buttonWhite.position(820, 600);
+  buttonBlack.position(760, 600);
+  buttonClear.position(950, 600);
 
   buttonRed.mousePressed(makeRed);
   buttonOrange.mousePressed(makeOrange);
@@ -78,7 +79,7 @@ function setup() {
   buttonClear.mousePressed(makeClear);
 
   strokeSlider = createSlider();
-  strokeSlider.position(400, 650);
+  strokeSlider.position(400, 650)
 }
 
 function firstRound(currPhrase) {
@@ -90,10 +91,11 @@ function firstRound(currPhrase) {
 function nextRound() { //only occurs for person who clicks button- how to update for everyone?
   firstinstruction.hide();
   nextButton.hide();
-  background('white')
+  background('white');
   roundinfo.newIndex += 1;
   roundinfo.newPhrase = phrases[roundinfo.newIndex]
-  socket.emit('turn', roundinfo);
+  socket.emit('turn', roundinfo);  
+  console.log(roundinfo)
 }
 
 let Py = 100;
@@ -107,12 +109,20 @@ function enteredGuess() {
     let correct = createP("Correct!");
     correct.position(1050, Py)
   }
-
   Py += 20;
 }
 
 function draw() {
   textAlign(LEFT);
+  clock = select('#circle');
+  clock.position(400,10);
+  time = createP(timer);
+  time.position(410,10)
+  if (frameCount%60 ==0 && timer> 0) {
+    timer--;
+  } else if (timer == 0) {
+    text("Times Up! The word was: " + roundinfo.newPhrase, 150,250)
+  }
 }
 
 function showDrawing(points) {
