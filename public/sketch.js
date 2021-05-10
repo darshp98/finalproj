@@ -1,101 +1,143 @@
 var socket;
-var captionInput, givenPhrases, userGuess, showUserGuess, submitButton, nextButton;
-var timer = 60;
+var captionInput, userGuess, submitButton, nextButton;
 //drawing
-var buttonRed, buttonBlue, buttonGreen;
+var buttonRed, buttonBlue, buttonGreen, buttonOrange, buttonYellow, buttonViolet, buttonWhite, buttonBlack, buttonClear;
 var redVal = 255, greenVal = 0, blueVal = 0;
 var strokeSlider;
-var i=0;
-var firstinstruction;
+//
+var firstinstruction, firstphrase;
+var phrases = ['dog', 'cat', 'mouse', 'santa', 'snowman', 'elf', 'alien', 'spaceship', 'rocket'];
+var index = 0;
+var roundinfo = {
+  newIndex: index,
+  newPhrase: phrases[index]
+}
+var clientPoints = {};
 
-//next button to start the next round, shows pop up to next player in array their word, timer starts; simple enter into input, replies right or wrong
+//NEXT ROUND STUFF TO FIX:
+//increase index by one for every client not just client that clicked
+//figure out how to clear canvas for every client when clicked
+//OTHERS:
+//maybe include player num of each client
+//deploy to heroku
 
 function setup() {
   createCanvas(500, 500);
 
   socket = io.connect('http://localhost:3000');
 
-  socket.emit('firstplayer', i);
-  socket.on('firstplayer', firstRound);
+  socket.emit('turn', roundinfo);
+  socket.on('turn', firstRound);
   socket.on('drawing', showDrawing);
-  socket.on('nextround', roundStarted);
 
   socket.on('disconnect', function () {
     socket.disconnect();
   });
 
   nextButton = select('#Next');
-  nextButton.mousePressed(nextPlayer);
+  nextButton.mousePressed(nextRound);
   nextButton.position(1000, 600);
+  nextButton.hide();
 
   submitButton = select('#Submit');
   submitButton.mousePressed(enteredGuess);
-  submitButton.position(1100, 550);
+  submitButton.position(1080, 540);
 
   captionInput = createInput('Enter your guess');
-  captionInput.position(950, 550);
+  captionInput.position(930, 540);
 
   //drawing stuff
   buttonRed = select('#Red');
-  buttonBlue = select('#Blue');
+  buttonOrange = select('#Orange');
+  buttonYellow = select('#Yellow');
   buttonGreen = select('#Green');
+  buttonBlue = select('#Blue');
+  buttonViolet = select('#Violet');
+  buttonWhite = select('#White');
+  buttonBlack = select('#Black');
+  buttonClear = select('#Clear');
 
   buttonRed.position(400, 600);
-  buttonBlue.position(500, 600);
-  buttonGreen.position(600, 600);
+  buttonOrange.position(460, 600);
+  buttonYellow.position(520, 600);
+  buttonGreen.position(580, 600);
+  buttonBlue.position(640, 600);
+  buttonViolet.position(700, 600);
+  buttonWhite.position(760, 600);
+  buttonBlack.position(820, 600);
+  buttonClear.position(340, 600);
 
   buttonRed.mousePressed(makeRed);
+  buttonOrange.mousePressed(makeOrange);
+  buttonYellow.mousePressed(makeYellow);
   buttonBlue.mousePressed(makeBlue);
   buttonGreen.mousePressed(makeGreen);
+  buttonViolet.mousePressed(makeViolet);
+  buttonWhite.mousePressed(makeWhite);
+  buttonBlack.mousePressed(makeBlack);
+  buttonClear.mousePressed(makeClear);
 
   strokeSlider = createSlider();
   strokeSlider.position(400, 650);
-
 }
 
-function firstRound(firstPh) {
-  firstinstruction = createP("Draw this: " + firstPh, 10, 10);
+function firstRound(currPhrase) {
+  nextButton.show();
+  firstinstruction = createP("Draw this: " + currPhrase);
   firstinstruction.position(600, 10)
 }
- 
-function nextPlayer() {
-  firstinstruction.hide();
-  i++;
-  socket.emit('nextround', i);
-}
 
-function roundStarted(phrase) {
-  let instruction = createP("Draw this: " + phrase, 10, 10);
-  instruction.position(600, 10)
+function nextRound() { //only occurs for person who clicks button- how to update for everyone?
+  firstinstruction.hide();
+  nextButton.hide();
+  background('white')
+  roundinfo.newIndex += 1;
+  roundinfo.newPhrase = phrases[roundinfo.newIndex]
+  socket.emit('turn', roundinfo);
 }
 
 let Py = 100;
 function enteredGuess() {
-  userGuess = captionInput.value();
-  let Px = 1000;
+  userGuess = str(captionInput.value());
+  let Px = 950;
   var guessP = createP(userGuess);
   guessP.position(Px, Py);
+
+  if (userGuess == roundinfo.newPhrase) {
+    let correct = createP("Correct!");
+    correct.position(1050, Py)
+  }
+
   Py += 20;
 }
 
 function draw() {
-  textAlign(CENTER);
-    if (userGuess == phrase) {
-    fill(0)
-    ellipse(100,100,10,10)
-  }
+  textAlign(LEFT);
 }
 
 function showDrawing(points) {
-  stroke(points.r, points.g, points.b);
-  strokeWeight(points.size);
-  line(points.x, points.y, points.x + 1, points.y + 1)
+  clientPoints = points;
+  stroke(clientPoints.r, clientPoints.g, clientPoints.b);
+  strokeWeight(clientPoints.size);
+  line(clientPoints.x, clientPoints.y, clientPoints.x + 1, clientPoints.y + 1)
 }
 
 //canvas drawing functions
 function makeRed() {
   redVal = 255;
   greenVal = 0;
+  blueVal = 0;
+}
+
+function makeOrange() {
+  redVal = 252;
+  greenVal = 134;
+  blueVal = 0;
+}
+
+function makeYellow() {
+  redVal = 255;
+  greenVal = 238;
   blueVal = 0;
 }
 
@@ -109,6 +151,27 @@ function makeGreen() {
   redVal = 0;
   greenVal = 255;
   blueVal = 0;
+}
+
+function makeViolet() {
+  redVal = 204;
+  greenVal = 0;
+  blueVal = 255;
+}
+
+function makeWhite() {
+  redVal = 255;
+  greenVal = 255;
+  blueVal = 255;
+}
+
+function makeBlack() {
+  redVal = 0;
+  greenVal = 0;
+  blueVal = 0;
+}
+function makeClear() {
+  background('white');
 }
 
 function mouseDragged() {

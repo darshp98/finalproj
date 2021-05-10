@@ -13,7 +13,6 @@ var socket = require('socket.io');
 var io = socket(server);
 io.sockets.on('connection', newConnection);
 
-var phrases = ['dog', 'cat', 'mouse', 'santa', 'snowman', 'elf', 'alien', 'spaceship', 'rocket']; //all given phrases
 var players = []; //all socket ids
 
 function newConnection(socket) {
@@ -22,24 +21,11 @@ function newConnection(socket) {
     players.push(socket.id);
     console.log(players)
 
-    socket.on('firstplayer', firstMsg);
-    function firstMsg(i) {
-        firstP = players[i];
-        firstPh = phrases[i];
-        socket.to(firstP).emit('firstplayer', firstPh);
-    }
-
-    socket.on('nextround', nextMsg)
-
-    function nextMsg(i) { //display phrase to curr player in array, once round is over, i increases and sends display to next player
-        currPlayer = players[i];
-        phrase = phrases[i];
-        socket.to(currPlayer).emit('nextround', phrase);   
-
-        socket.on('broadcast', function () {
-            socket.broadcast.emit('broadcast', i); 
-        })   
-    }
+    socket.on('turn', function (roundinfo) {
+        currPlayer = players[roundinfo.newIndex];
+        currPhrase = roundinfo.newPhrase;
+        socket.to(currPlayer).emit('turn', currPhrase)
+    })
 
     socket.on('drawing', drawingMsg);
     function drawingMsg(points) {
