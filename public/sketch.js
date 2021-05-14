@@ -17,7 +17,8 @@ var phrases = ['dog', 'cat', 'mouse', 'santa', 'snowman', 'elf', 'alien', 'space
 var index = 0;
 var roundinfo = {
   newIndex: index,
-  newPhrase: phrases[index]
+  newPhrase: phrases[index],
+  numofplayers: 2
 } //sends the player index and player phrase
 var drawingstart = false;
 
@@ -29,7 +30,7 @@ function setup() {
   socket.on('turn', firstRound);
   socket.on('update', updated);
   socket.on('drawing', showDrawing);
-  socket.on('clear', function() {
+  socket.on('clear', function () {
     background('white');
   });
   socket.on('timerstart', function (alltimerstart) {
@@ -100,15 +101,16 @@ function starting() { //once clicked start button
   //need to broadcast round has started to everyone
 }
 
-function firstRound(broadcasted) {
+function firstRound(newplayerinfo) {
   startButton.show();
-  firstinstruction = createP("Draw this: " + broadcasted.pphrase);
+  firstinstruction = createP("Draw this: " + newplayerinfo.newPhrase);
   firstinstruction.position(600, 10)
 }
 
 function updated(broadcasted) { //recieves increased index values from  prev player and sent to everyone
   roundinfo.newIndex = broadcasted.newIndex; //second player info = first player updated info
   roundinfo.newPhrase = broadcasted.newPhrase;//puts new values into array 
+  roundinfo.numofplayers = broadcasted.numofplayers;
   console.log(roundinfo)
 }
 
@@ -117,6 +119,7 @@ function nextRound() { //once clicked next button
   roundinfo.newPhrase = phrases[roundinfo.newIndex] //increases phrase index
   firstinstruction.hide();
   nextButton.hide();
+  background('white');
   socket.emit('clear');
   socket.emit('turn', roundinfo); //sends to server
   socket.emit('update', roundinfo); //sends to server
@@ -130,8 +133,11 @@ function enteredGuess() {
   guessP.position(Px, Py);
 
   if (userGuess == roundinfo.newPhrase) {
-    let correct = createP("Correct!");
+    let correct = createP("CORRECT");
     correct.position(1050, Py)
+  } else if (userGuess != roundinfo.newPhrase) {
+    let incorrect = createP("INCORRECT");
+    incorrect.position(1050, Py)
   }
   Py += 20;
 }
@@ -145,8 +151,11 @@ function draw() {
   if (startTimer) {
     if (frameCount % 60 == 0 && timer > 0) {
       timer--;
-    } else if (timer == 0) {
-      if (drawingstart) {
+    }
+  }
+  if (timer == 0) {
+    if (roundinfo.newIndex < roundinfo.numofplayers - 1) {
+      if (drawingstart) {  //if ur the currdrawer
         nextButton.show();
       }
       fill(0)
@@ -154,8 +163,14 @@ function draw() {
       timer = 30;
       startTimer = false;
       drawingstart = false;
+    } else if (roundinfo.newIndex == roundinfo.numofplayers - 1) {
+      fill(0)
+      text("Times Up! The word was: " + roundinfo.newPhrase, 150, 250)
+      text("GAME OVER", 200, 300)
+      drawingstart = false;
     }
   }
+
 }
 
 function showDrawing(points) {

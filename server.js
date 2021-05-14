@@ -19,23 +19,16 @@ var broadcasted = {};
 function newConnection(socket) {
 
     players.push(socket.id);
-    console.log(players)
+ //   console.log(players)
 
     socket.on('turn', function (roundinfo) { //recieves increased index values from player that clicked next
-        playerIndex = roundinfo.newIndex //reassigns them
-        currPhrase = roundinfo.newPhrase;
-        broadcasted = { //puts reassigned values into array
-            pindex: playerIndex,
-            pphrase: currPhrase
-        }
-
-        currPlayer = players[playerIndex];
-
-        socket.to(currPlayer).emit('turn', broadcasted); //sends those values to next player
+        currPlayer = players[roundinfo.newIndex];
+        socket.to(currPlayer).emit('turn', roundinfo); //sends those values to next player
+        console.log(roundinfo);
     })
 
     socket.on('update', function (roundinfo) { //recieves increased index values from player that clicked next
-        console.log(roundinfo);
+        roundinfo.numofplayers= players.length;
         socket.broadcast.emit('update', roundinfo); //sends those values back to everyone
     })
 

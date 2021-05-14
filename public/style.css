@@ -5,6 +5,7 @@ html, body {
 }
 
 canvas {
+  position: absolute;
   display: block;
   margin-left: 400px;
   margin-top: 60px;
@@ -38,11 +39,12 @@ canvas {
 #countdown {
   position: absolute;
   top: 5px;
-  left: 415px;
+  left: 417px;
 }
 
 button {
   text-align: center;
+  position: absolute;
 }
 
 #Red {
