@@ -1,5 +1,6 @@
 //to do:
-//timer
+//broadcast timer
+//fix clear button
 //maybe include player num of each client
 
 //drawing
@@ -8,15 +9,17 @@ var redVal = 255, greenVal = 0, blueVal = 0;
 var strokeSlider;
 //
 var socket;
-var captionInput, userGuess, submitButton, nextButton;
+var captionInput, userGuess, submitButton, nextButton, startButton;
 var firstinstruction, firstphrase;
 var timer = 30;
+var startTimer = false;
 var phrases = ['dog', 'cat', 'mouse', 'santa', 'snowman', 'elf', 'alien', 'spaceship', 'rocket'];
 var index = 0;
 var roundinfo = {
   newIndex: index,
   newPhrase: phrases[index]
 } //sends the player index and player phrase
+var drawingstart = false;
 
 function setup() {
   createCanvas(500, 500);
@@ -27,6 +30,9 @@ function setup() {
   socket.on('update', updated);
   socket.on('drawing', showDrawing);
   socket.on('clear', makeClear);
+  socket.on('timerstart', function (alltimerstart) {
+    startTimer = alltimerstart;
+  })
 
   socket.on('disconnect', function () {
     socket.disconnect();
@@ -34,12 +40,17 @@ function setup() {
 
   nextButton = select('#Next');
   nextButton.mousePressed(nextRound);
-  nextButton.position(1050, 600);
+  nextButton.position(1010, 600);
   nextButton.hide();
 
   submitButton = select('#Submit');
   submitButton.mousePressed(enteredGuess);
   submitButton.position(1080, 540);
+
+  startButton = select('#Start');
+  startButton.mousePressed(starting);
+  startButton.position(980, 600);
+  startButton.hide();
 
   captionInput = createInput('Enter your guess');
   captionInput.position(930, 540);
@@ -79,15 +90,23 @@ function setup() {
   strokeSlider.position(400, 650)
 }
 
-function firstRound(broadcasted) { 
-  nextButton.show();
+function starting() { //once clicked start button
+  drawingstart = true; //drawing only for curr
+  startTimer = true; //time needs to happen for everyone
+  startButton.hide();
+  socket.emit('timerstart', startTimer);
+  //need to broadcast round has started to everyone
+}
+
+function firstRound(broadcasted) {
+  startButton.show();
   firstinstruction = createP("Draw this: " + broadcasted.pphrase);
   firstinstruction.position(600, 10)
 }
 
 function updated(broadcasted) { //recieves increased index values from  prev player and sent to everyone
   roundinfo.newIndex = broadcasted.newIndex; //second player info = first player updated info
-  roundinfo.newPhrase = broadcasted.newPhrase;//puts new values into array
+  roundinfo.newPhrase = broadcasted.newPhrase;//puts new values into array 
   console.log(roundinfo)
 }
 
@@ -96,7 +115,7 @@ function nextRound() { //once clicked next button
   roundinfo.newPhrase = phrases[roundinfo.newIndex] //increases phrase index
   firstinstruction.hide();
   nextButton.hide();
-  background('white');
+  socket.emit('clear');
   socket.emit('turn', roundinfo); //sends to server
   socket.emit('update', roundinfo); //sends to server
 }
@@ -118,13 +137,22 @@ function enteredGuess() {
 function draw() {
   textAlign(LEFT);
   clock = select('#circle');
-  clock.position(400, 10);
-  time = createP(timer);
-  time.position(410, 10)
-  if (frameCount % 60 == 0 && timer > 0) {
-    timer--;
-  } else if (timer == 0) {
-    text("Times Up! The word was: " + roundinfo.newPhrase, 150, 250)
+  clock.position(400, 5);
+  document.getElementById("countdown").innerHTML = timer
+
+  if (startTimer) {
+    if (frameCount % 60 == 0 && timer > 0) {
+      timer--;
+    } else if (timer == 0) {
+      if (drawingstart) {
+        nextButton.show();
+      }
+      fill(0)
+      text("Times Up! The word was: " + roundinfo.newPhrase, 150, 250)
+      timer = 30;
+      startTimer = false;
+      drawingstart = false;
+    }
   }
 }
 
@@ -190,18 +218,20 @@ function makeClear() {
 
 function mouseDragged() {
 
-  stroke(redVal, greenVal, blueVal);
-  strokeWeight(strokeSlider.value());
-  line(mouseX, mouseY, (mouseX + 1), (mouseY + 1));
+  if (drawingstart) {
+    stroke(redVal, greenVal, blueVal);
+    strokeWeight(strokeSlider.value());
+    line(mouseX, mouseY, (mouseX + 1), (mouseY + 1));
 
-  var points = {
-    x: mouseX,
-    y: mouseY,
-    r: redVal,
-    g: greenVal,
-    b: blueVal,
-    size: strokeSlider.value()
+    var points = {
+      x: mouseX,
+      y: mouseY,
+      r: redVal,
+      g: greenVal,
+      b: blueVal,
+      size: strokeSlider.value()
+    }
+
+    socket.emit('drawing', points);
   }
-
-  socket.emit('drawing', points);
 }

@@ -43,6 +43,11 @@ function newConnection(socket) {
     function clearMsg() {
         socket.broadcast.emit('clear');
     }
+
+    socket.on('timerstart', function(startTimer) {
+        socket.broadcast.emit('timerstart', startTimer)
+    })
+
     socket.on('drawing', drawingMsg);
     function drawingMsg(points) {
         socket.broadcast.emit('drawing', points);

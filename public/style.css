@@ -34,6 +34,13 @@ canvas {
   top: 570px;
   left:400px;
 }
+
+#countdown {
+  position: absolute;
+  top: 5px;
+  left: 415px;
+}
+
 button {
   text-align: center;
 }
