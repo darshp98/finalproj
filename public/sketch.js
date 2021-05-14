@@ -25,7 +25,7 @@ var drawingstart = false;
 function setup() {
   createCanvas(500, 500);
 
-  socket = io.connect('http://localhost:3000');
+  socket = io.connect('https://final-app-21.herokuapp.com/');
   socket.emit('turn', roundinfo);
   socket.on('turn', firstRound);
   socket.on('update', updated);
