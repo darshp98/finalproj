@@ -20,7 +20,7 @@ var drawingstart = false;
 function setup() {
   createCanvas(500, 500);
 
-  socket = io.connect('https://final-app-21.herokuapp.com/');
+  socket = io.connect('http://localhost:3000');
   socket.emit('turn', roundinfo);
   socket.on('turn', firstRound);
   socket.on('update', updated);
@@ -94,12 +94,15 @@ function starting() { //once clicked start button
   startButton.hide();
   socket.emit('timerstart', startTimer);
   //need to broadcast round has started to everyone
+  //need to tell currplayer num of players
+  console.log(roundinfo)
 }
 
 function firstRound(newplayerinfo) {
   startButton.show();
   firstinstruction = createP("Draw this: " + newplayerinfo.newPhrase);
   firstinstruction.position(600, 10)
+  roundinfo.numofplayers = newplayerinfo.numofplayers;
 }
 
 function updated(broadcasted) { //recieves increased index values from  prev player and sent to everyone
@@ -118,6 +121,7 @@ function nextRound() { //once clicked next button
   socket.emit('clear');
   socket.emit('turn', roundinfo); //sends to server
   socket.emit('update', roundinfo); //sends to server
+  console.log(roundinfo)
 }
 
 let Py = 100;

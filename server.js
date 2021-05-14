@@ -4,10 +4,10 @@ var express = require('express');
 var app = express();
 app.use(express.static('public'));
 
-//var server = app.listen(3000);
+var server = app.listen(3000);
 //heroku
-var port = process.env.PORT || 3000;
-var server = app.listen(port);
+// var port = process.env.PORT || 3000;
+// var server = app.listen(port);
 
 var socket = require('socket.io');
 var io = socket(server);
@@ -22,6 +22,7 @@ function newConnection(socket) {
  //   console.log(players)
 
     socket.on('turn', function (roundinfo) { //recieves increased index values from player that clicked next
+        roundinfo.numofplayers= players.length;
         currPlayer = players[roundinfo.newIndex];
         socket.to(currPlayer).emit('turn', roundinfo); //sends those values to next player
         console.log(roundinfo);
