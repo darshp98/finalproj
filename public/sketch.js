@@ -1,7 +1,7 @@
 //to do:
-//broadcast timer
-//fix clear button
+//fix clearing issue - redraws white background over and over for some rsn
 //maybe include player num of each client
+//include end screen and play again
 
 //drawing
 var buttonRed, buttonBlue, buttonGreen, buttonOrange, buttonYellow, buttonViolet, buttonWhite, buttonBlack, buttonClear;
@@ -29,7 +29,9 @@ function setup() {
   socket.on('turn', firstRound);
   socket.on('update', updated);
   socket.on('drawing', showDrawing);
-  socket.on('clear', makeClear);
+  socket.on('clear', function() {
+    background('white');
+  });
   socket.on('timerstart', function (alltimerstart) {
     startTimer = alltimerstart;
   })
