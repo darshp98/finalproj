@@ -1,8 +1,3 @@
-//to do:
-//fix clearing issue - redraws white background over and over for some rsn
-//maybe include player num of each client
-//include end screen and play again
-
 //drawing
 var buttonRed, buttonBlue, buttonGreen, buttonOrange, buttonYellow, buttonViolet, buttonWhite, buttonBlack, buttonClear;
 var redVal = 255, greenVal = 0, blueVal = 0;
@@ -165,12 +160,11 @@ function draw() {
       drawingstart = false;
     } else if (roundinfo.newIndex == roundinfo.numofplayers - 1) {
       fill(0)
-      text("Times Up! The word was: " + roundinfo.newPhrase, 150, 250)
-      text("GAME OVER", 200, 300)
+      text("Times Up! The word was: " + roundinfo.newPhrase, 160, 250)
+      text("GAME OVER", 210, 100)
       drawingstart = false;
     }
   }
-
 }
 
 function showDrawing(points) {
